@@ -1,22 +1,19 @@
 import { invoke } from "@tauri-apps/api/core";
 
-let greetInputEl: HTMLInputElement | null;
-let greetMsgEl: HTMLElement | null;
+let serverDownloadBtn: HTMLButtonElement = document.getElementById("get-server") as HTMLButtonElement;
+let serverDownloadStatus: HTMLParagraphElement = document.getElementById("server-download-status") as HTMLParagraphElement;
 
-async function greet() {
-	if (greetMsgEl && greetInputEl) {
-		// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-		greetMsgEl.textContent = await invoke("greet", {
-			name: greetInputEl.value,
-		});
-	}
-}
-
-window.addEventListener("DOMContentLoaded", () => {
-	greetInputEl = document.querySelector("#greet-input");
-	greetMsgEl = document.querySelector("#greet-msg");
-	document.querySelector("#greet-form")?.addEventListener("submit", (e) => {
-		e.preventDefault();
-		greet();
-	});
+serverDownloadBtn?.addEventListener("click", async () => {
+	serverDownloadBtn.disabled = true;
+    try {
+        await invoke("get_paper_server");
+        console.log("Paper server fetched successfully!");
+		serverDownloadStatus.style.color = "green";
+		serverDownloadStatus.textContent = "Paper server downloaded successfully!";
+    } catch (error) {
+        console.error("Failed to fetch the Paper server:", error);
+		serverDownloadStatus.style.color = "red";
+		serverDownloadStatus.textContent = "Failed to fetch the Paper server: " + error;
+    }
+	serverDownloadBtn.disabled = false;
 });
