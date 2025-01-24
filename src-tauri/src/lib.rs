@@ -24,6 +24,7 @@ impl From<DownloadError> for String {
 }
 
 const API_BASE_URL: &str = "https://api.papermc.io/v2/projects/paper";
+const SAVE_PATH: &str = "../server";
 
 #[tauri::command]
 async fn get_paper_server() -> Result<(), String> {
@@ -73,7 +74,7 @@ async fn get_paper_server() -> Result<(), String> {
     let response = reqwest::get(&download_url).await.map_err(DownloadError::Reqwest)?;
     if response.status().is_success() {
         let file_name = format!("paper-{latest_version}-{latest_build}.jar");
-        let mut file = File::create(Path::new(&file_name)).map_err(DownloadError::Io)?;
+        let mut file = File::create(Path::new(SAVE_PATH).join(&file_name)).map_err(DownloadError::Io)?;
         let content = response.bytes().await.map_err(DownloadError::Reqwest)?;
         file.write_all(&content).map_err(DownloadError::Io)?;
         println!("Paper server downloaded and saved as '{}'.", file_name);
