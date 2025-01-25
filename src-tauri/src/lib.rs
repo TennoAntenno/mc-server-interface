@@ -5,11 +5,6 @@ use std::fs;
 use std::process::Command;
 use std::process::Stdio;
 
-use notify::{Config, Event, EventKind, RecommendedWatcher, RecursiveMode, Watcher};
-use std::sync::mpsc;
-use tokio::task;
-
-
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thiserror::Error;
