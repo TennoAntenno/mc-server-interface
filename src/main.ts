@@ -7,7 +7,8 @@ let serverDownloadStatus: HTMLParagraphElement = document.getElementById("server
 let serverOpenBtn: HTMLButtonElement = document.getElementById("open-server") as HTMLButtonElement;
 let serverOpenStatus: HTMLParagraphElement = document.getElementById("server-open-status") as HTMLParagraphElement;
 
-let serverOutput: HTMLParagraphElement = document.getElementById("server-output") as HTMLParagraphElement;
+let serverOutput: HTMLElement = document.getElementById("server-output") as HTMLElement;
+let serverInput: HTMLInputElement = document.getElementById("server-input") as HTMLInputElement;
 
 // perform server download
 serverDownloadBtn?.addEventListener("click", async () => {
@@ -56,7 +57,25 @@ currentWindow.listen<string>("log-updated", (event) => {
 
   // Update the UI with the log content
   if (serverOutput) {
-    // Replace newline characters with <br> for proper display
     serverOutput.innerHTML = logContent.replace(/\n/g, "<br>");
+    // scroll to bottom if already at the bottom (with margin of 100px)
+    if (serverOutput.scrollHeight - serverOutput.scrollTop <= serverOutput.clientHeight + 100) { 
+      serverOutput.scrollTop = serverOutput.scrollHeight;
+    }
+    
   }
+});
+
+serverInput.addEventListener("keyup", (event) => {
+    if (event.key === "Enter") {
+        const command = serverInput.value;
+        serverInput.value = "";
+
+        try {
+            invoke("run_command", { command });
+            console.log("Command executed successfully:", command);
+        } catch (error) {
+            console.error("Failed to execute command:", error);
+        }
+    }
 });

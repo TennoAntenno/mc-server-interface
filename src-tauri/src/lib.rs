@@ -2,12 +2,14 @@ use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
 use std::fs;
-use std::process::Command;
-use std::process::Stdio;
+use std::process::{Command, Stdio};
 
 use reqwest::Error as ReqwestError;
 use serde_json::Value;
 use thiserror::Error;
+use lazy_static::lazy_static;
+use std::sync::{Arc, Mutex};
+use std::process::Child;
 
 use tauri::Window;
 use tauri::Emitter;
@@ -95,46 +97,6 @@ async fn get_paper_server() -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-async fn open_paper_server() -> Result<(), String> {
-    // Step 1: Get the directory contents
-    let entries = fs::read_dir(SAVE_PATH).map_err(|e| format!("Failed to read save path: {}", e))?;
-
-    // Step 2: Find the first file that matches the criteria
-    let paper_jar = entries
-        .filter_map(|entry| entry.ok())
-        .map(|entry| entry.path())
-        .find(|path| {
-            if let Some(file_name) = path.file_name().and_then(|f| f.to_str()) {
-                file_name.starts_with("paper-") && file_name.ends_with(".jar")
-            } else {
-                false
-            }
-        })
-        .ok_or_else(|| "No Paper server JAR file found in the save path.".to_string())?;
-
-    // Step 3: Run the JAR file using `java -jar`, setting the working directory to `SAVE_PATH`
-    let status = Command::new("java")
-        .arg("-jar")
-        .arg(&paper_jar)
-        .arg("--nogui")
-        .current_dir(SAVE_PATH) // Ensure the working directory is set to SAVE_PATH
-        .stdout(Stdio::inherit()) // Optional: pipe stdout to console
-        .stderr(Stdio::inherit()) // Optional: pipe stderr to console
-        .status()
-        .map_err(|e| format!("Failed to execute the JAR file: {}", e))?;
-
-    // Step 4: Check if the server process completed successfully
-    if status.success() {
-        println!("Paper server closed successfully.");
-        Ok(())
-    } else {
-        Err(format!(
-            "Paper server process failed with exit code: {}",
-            status.code().unwrap_or(-1)
-        ))
-    }
-}
 
 #[tauri::command]
 async fn watch_latest_log(window: Window) -> Result<(), String> {
@@ -144,21 +106,21 @@ async fn watch_latest_log(window: Window) -> Result<(), String> {
 
     let log_file_path = format!("{}/logs/latest.log", SAVE_PATH);
 
-    // Step 1: Spawn an asynchronous task to handle periodic file reading
+    // spawn an asynchronous task to handle periodic file reading
     tokio::spawn(async move {
-        let mut interval = time::interval(Duration::from_secs(1)); // Check every 1 seconds
+        let mut interval = time::interval(Duration::from_secs(1)); // check every second
         let mut last_content = String::new();
 
         loop {
-            interval.tick().await; // Wait for the next tick
+            interval.tick().await; // wait for the next tick
 
             match fs::read_to_string(&log_file_path) {
                 Ok(content) => {
-                    // Emit only if the content has changed
+                    // emit only if the content has changed
                     if content != last_content {
                         last_content = content.clone();
 
-                        // Emit the content to the frontend
+                        // emit the content to the frontend
                         if let Err(err) = window.emit("log-updated", content) {
                             eprintln!("Failed to emit log content: {}", err);
                         } else {
@@ -176,13 +138,73 @@ async fn watch_latest_log(window: Window) -> Result<(), String> {
     Ok(())
 }
 
+lazy_static! {
+    static ref SERVER_PROCESS: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
+}
 
+#[tauri::command]
+async fn open_paper_server() -> Result<(), String> {
+    let entries = fs::read_dir(SAVE_PATH).map_err(|e| format!("Failed to read save path: {}", e))?;
+
+    let paper_jar = entries
+        .filter_map(|entry| entry.ok())
+        .map(|entry| entry.path())
+        .find(|path| {
+            if let Some(file_name) = path.file_name().and_then(|f| f.to_str()) {
+                file_name.starts_with("paper-") && file_name.ends_with(".jar")
+            } else {
+                false
+            }
+        })
+        .ok_or_else(|| "No Paper server JAR file found in the save path.".to_string())?;
+
+    let mut process = Command::new("java")
+        .arg("-jar")
+        .arg(&paper_jar)
+        .arg("--nogui")
+        .current_dir(SAVE_PATH)
+        .stdin(Stdio::piped()) // pipe stdin for command input
+        .stdout(Stdio::inherit())
+        .stderr(Stdio::inherit())
+        .spawn()
+        .map_err(|e| format!("Failed to execute the JAR file: {}", e))?;
+
+    {
+        let mut server_process = SERVER_PROCESS.lock().unwrap();
+        *server_process = Some(process);
+    }
+
+    println!("Paper server started successfully.");
+    Ok(())
+}
+
+#[tauri::command]
+async fn run_command(command: String) -> Result<(), String> {
+    let mut server_process = SERVER_PROCESS.lock().unwrap();
+    if let Some(process) = server_process.as_mut() {
+        if let Some(stdin) = process.stdin.as_mut() {
+            // write the command to the stdin
+            stdin.write_all(command.as_bytes()).map_err(|e| format!("Failed to write to server stdin: {}", e))?;
+            stdin.write_all(b"\n").map_err(|e| format!("Failed to write newline to server stdin: {}", e))?;
+            println!("Command sent: {}", command);
+            Ok(())
+        } else {
+            Err("Server stdin is not available.".to_string())
+        }
+    } else {
+        Err("No server process found. Start the server first.".to_string())
+    }
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![get_paper_server, open_paper_server, watch_latest_log])
+        .invoke_handler(tauri::generate_handler![
+            get_paper_server,
+            open_paper_server,
+            watch_latest_log,
+            run_command])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

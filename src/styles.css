@@ -5,9 +5,10 @@
 	line-height: 24px;
 	font-weight: 400;
 
-	--primary: #070707;
-	--secondary: #0f0f0f;
-	--font: #f6f6f6;
+	--primary-color: #1C1C22;
+	--secondary-color: #09090B;
+	--font-color: #f6f6f6;
+	--code-font-color: #f6f6f6;
 
 
 	font-synthesis: none;
@@ -19,14 +20,40 @@
 
 @media (prefers-color-scheme: light) {
 	:root {
-		--primary: #f6f6f6;
-		--secondary: #adadad;
-		--font: #0f0f0f;
+		--primary-color: #f6f6f6;
+		--secondary-color: #09090B;
+		--font-color: #0f0f0f;
 	}
 }
 
 body {
-	background-color: var(--primary);
+	background-color: var(--primary-color);
 	color: var(--font);
 }
 
+input {
+	display: block;
+	margin: 0 auto;
+	padding: 1rem;
+	border-radius: 1rem;
+	background-color: var(--secondary-color);
+	color: var(--code-font-color);
+	font-family: monospace;
+
+	margin-top: 0.5rem;
+	border: none;
+	width: 50vw;
+}
+
+code {
+	display: block;
+	margin: 0 auto;
+	padding: 1rem;
+	border-radius: 1rem;
+	background-color: var(--secondary-color);
+	color: var(--code-font-color);
+	font-family: monospace;
+
+	height: 75vh;
+	overflow-y: scroll;
+}
