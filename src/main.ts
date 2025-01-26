@@ -16,13 +16,15 @@ serverDownloadBtn?.addEventListener("click", async () => {
     try {
         await invoke("get_paper_server");
         console.log("Paper server fetched successfully!");
-		serverDownloadStatus.style.color = "green";
+        serverDownloadStatus.classList.remove("negative");
+		serverDownloadStatus.classList.add("positive");
 		serverDownloadStatus.textContent = "Paper server downloaded successfully!";
 
         serverOpenBtn.disabled = false;
     } catch (error) {
         console.error("Failed to fetch the Paper server:", error);
-		serverDownloadStatus.style.color = "red";
+		serverDownloadStatus.classList.remove("positive");
+		serverDownloadStatus.classList.add("negative");
 		serverDownloadStatus.textContent = "Failed to fetch the Paper server: " + error;
     }
 	serverDownloadBtn.disabled = false;
@@ -31,19 +33,22 @@ serverDownloadBtn?.addEventListener("click", async () => {
 // perform server launch
 serverOpenBtn.disabled = true;
 serverOpenBtn?.addEventListener("click", async () => {
-    serverOpenStatus.style.color = "white";
+    serverOpenStatus.classList.remove("positive");
+	serverOpenStatus.classList.add("negative");
     serverOpenStatus.textContent = "Paper server running...";
     serverOpenBtn.disabled = true;
     try {
         await invoke("open_paper_server");
         console.log("Paper server opened successfully!");
-		serverOpenStatus.style.color = "green";
+	    serverOpenStatus.classList.remove("negative");
+		serverOpenStatus.classList.add("positive");
 		serverOpenStatus.textContent = "Paper ran successfully!";
 
         serverOpenBtn.disabled = false;
     } catch (error) {
         console.error("Failed to open the Paper server:", error);
-		serverOpenStatus.style.color = "red";
+		serverOpenStatus.classList.remove("positive");
+		serverOpenStatus.classList.add("negative");
 		serverOpenStatus.textContent = "Failed to open the Paper server: " + error;
     }
     serverOpenBtn.disabled = false;

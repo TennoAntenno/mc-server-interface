@@ -1,3 +1,11 @@
+@font-face {
+	font-family: "JetBrains Mono";
+	src: url('assets/JetBrainsMonoNL-Regular.ttf');
+}
+@font-face {
+	font-family: "Roboto";
+	src: url('assets/Roboto_SemiCondensed-Regular.ttf');
+}
 
 :root {
 	font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
@@ -7,9 +15,16 @@
 
 	--primary-color: #1C1C22;
 	--secondary-color: #09090B;
-	--font-color: #f6f6f6;
-	--code-font-color: #f6f6f6;
+	--main-font: Roboto;
+	--font-color: #d2d2d2;
+	--font-color-positive: #06d6a0;
+	--font-color-negative: #ef476f;
 
+	--code-color: #000000;
+	--code-font-color: #d2d2d2;
+	--code-font: JetBrains Mono;
+
+	--icon-color: invert(1);
 
 	font-synthesis: none;
 	text-rendering: optimizeLegibility;
@@ -21,14 +36,50 @@
 @media (prefers-color-scheme: light) {
 	:root {
 		--primary-color: #f6f6f6;
-		--secondary-color: #09090B;
-		--font-color: #0f0f0f;
+		--secondary-color: #c0c0c0;
+		--font-color: #09090B;
+		--icon-color: invert(0);
 	}
+}
+
+.positive {
+	color: var(--font-color-positive);
+}
+.negative {
+	color: var(--font-color-negative);
 }
 
 body {
 	background-color: var(--primary-color);
+	font-family: var(--main-font);
 	color: var(--font);
+}
+
+button {
+	font-family: var(--main-font);
+
+	border: none;
+	border-radius: 1rem;
+	padding: 1rem;
+	color: var(--font-color);
+	background-color: var(--secondary-color);
+}
+/* show pointer if button is not disabled */
+button:enabled {
+	cursor: pointer;
+}
+button:disabled {
+	opacity: 0.5;
+}
+
+.icon-button {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 2rem;
+}
+.icon-button img {
+	filter: var(--icon-color);
 }
 
 input {
@@ -37,12 +88,14 @@ input {
 	padding: 1rem;
 	border-radius: 1rem;
 	background-color: var(--secondary-color);
-	color: var(--code-font-color);
-	font-family: monospace;
-
+	color: var(--font-color);
+	font-family: var(--code-font);
 	margin-top: 0.5rem;
 	border: none;
 	width: 50vw;
+}
+input::placeholder {
+	color: var(--font-color);
 }
 
 code {
@@ -50,10 +103,22 @@ code {
 	margin: 0 auto;
 	padding: 1rem;
 	border-radius: 1rem;
-	background-color: var(--secondary-color);
+	background-color: var(--code-color);
 	color: var(--code-font-color);
-	font-family: monospace;
+	font-family: var(--code-font);
 
 	height: 75vh;
 	overflow-y: scroll;
+}
+
+/* change scrollbar to match the style of the site */
+::-webkit-scrollbar {
+	width: 0.5rem;
+}
+::-webkit-scrollbar-track {
+	background: transparent;
+}
+::-webkit-scrollbar-thumb {
+	background: var(--secondary-color);
+	border-radius: 0.5rem;
 }
