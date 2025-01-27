@@ -179,6 +179,14 @@ async fn open_paper_server() -> Result<(), String> {
 }
 
 #[tauri::command]
+async fn restart_paper_server() -> Result<(), String> {
+    // run stop command then start command
+    run_command("stop".to_string()).await?;
+    open_paper_server().await?;
+    Ok(())
+}
+
+#[tauri::command]
 async fn run_command(command: String) -> Result<(), String> {
     let mut server_process = SERVER_PROCESS.lock().unwrap();
     if let Some(process) = server_process.as_mut() {
@@ -203,6 +211,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             get_paper_server,
             open_paper_server,
+            restart_paper_server,
             watch_latest_log,
             run_command])
         .run(tauri::generate_context!())

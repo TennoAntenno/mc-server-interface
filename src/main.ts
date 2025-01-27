@@ -7,6 +7,8 @@ let serverDownloadStatus: HTMLParagraphElement = document.getElementById("server
 let serverOpenBtn: HTMLButtonElement = document.getElementById("open-server") as HTMLButtonElement;
 let serverOpenStatus: HTMLParagraphElement = document.getElementById("server-open-status") as HTMLParagraphElement;
 
+let restartServerBtn: HTMLButtonElement = document.getElementById("restart-server") as HTMLButtonElement;
+
 let serverOutput: HTMLElement = document.getElementById("server-output") as HTMLElement;
 let serverInput: HTMLInputElement = document.getElementById("server-input") as HTMLInputElement;
 
@@ -52,6 +54,16 @@ serverOpenBtn?.addEventListener("click", async () => {
 		serverOpenStatus.textContent = "Failed to open the Paper server: " + error;
     }
     serverOpenBtn.disabled = false;
+});
+
+// perform server restart
+restartServerBtn.addEventListener("click", async () => {
+    try {
+        await invoke("restart_paper_server");
+        console.log("Paper server restarted successfully!");
+    } catch (error) {
+        console.error("Failed to restart the Paper server:", error);
+    }
 });
 
 invoke("watch_latest_log");
