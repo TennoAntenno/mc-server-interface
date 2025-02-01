@@ -1,7 +1,34 @@
-# Tauri + Vanilla TS
+# Minecraft Server Interface
+Control your locally run Minecraft server with ease using a GUI.
 
-This template should help get you started developing with Tauri in vanilla HTML, CSS and Typescript.
+#### THIS PROJECT IS STILL IN DEVELOPMENT. THERE IS NO GUARANTEE THAT IT WILL WORK PROPERLY OR AT ALL.
 
-## Recommended IDE Setup
+### Current features:
+- Download the latest Paper server
+- Launch the server
+- Restart the server
+- Preview the server console
+- Run commands in the server console
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+### Dependencies:
+- [Node.js](https://nodejs.org/en/)
+- [Rust](https://www.rust-lang.org/)
+
+### How to use:
+1. Make sure you have [Node.js](https://nodejs.org/en/) and [Rust](https://www.rust-lang.org/) installed.
+2. Clone this repository:
+    ```
+    git clone https://github.com/TennoAntenno/mc-server-interface.git
+    ```
+3. Change the directory to the cloned repository:
+    ```
+    cd mc-server-interface
+    ```
+4. Run the following command to initialize Node:
+    ```
+    npm init
+    ```
+5. Run the project:
+    ```
+    npm run tauri dev
+    ```
