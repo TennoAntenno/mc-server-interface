@@ -1,11 +1,14 @@
 import { invoke } from "@tauri-apps/api/core";
 import { Window } from "@tauri-apps/api/window";
+import { Notyf } from 'notyf';
+import 'notyf/notyf.min.css';
+
+const notyf = new Notyf();
+notyf.options.duration = 5000;
 
 let serverDownloadBtn: HTMLButtonElement = document.getElementById("get-server") as HTMLButtonElement;
-let serverDownloadStatus: HTMLParagraphElement = document.getElementById("server-download-status") as HTMLParagraphElement;
 
 let serverOpenBtn: HTMLButtonElement = document.getElementById("open-server") as HTMLButtonElement;
-let serverOpenStatus: HTMLParagraphElement = document.getElementById("server-open-status") as HTMLParagraphElement;
 
 let restartServerBtn: HTMLButtonElement = document.getElementById("restart-server") as HTMLButtonElement;
 
@@ -15,39 +18,28 @@ serverDownloadBtn?.addEventListener("click", async () => {
     try {
         await invoke("get_paper_server");
         console.log("Paper server fetched successfully!");
-        serverDownloadStatus.classList.remove("negative");
-		serverDownloadStatus.classList.add("positive");
-		serverDownloadStatus.textContent = "Paper server downloaded successfully!";
-
+        notyf.success("Paper server downloaded successfully!");
         serverOpenBtn.disabled = false;
     } catch (error) {
         console.error("Failed to fetch the Paper server:", error);
-		serverDownloadStatus.classList.remove("positive");
-		serverDownloadStatus.classList.add("negative");
-		serverDownloadStatus.textContent = "Failed to fetch the Paper server: " + error;
+		notyf.error("Failed to download the Paper server: " + error);
     }
 	serverDownloadBtn.disabled = false;
 });
 
 // perform server launch
 serverOpenBtn?.addEventListener("click", async () => {
-    serverOpenStatus.classList.remove("positive");
-	serverOpenStatus.classList.add("negative");
-    serverOpenStatus.textContent = "Paper server running...";
+    notyf.success("Paper server starting...");
     serverOpenBtn.disabled = true;
     try {
         await invoke("open_paper_server");
         console.log("Paper server opened successfully!");
-	    serverOpenStatus.classList.remove("negative");
-		serverOpenStatus.classList.add("positive");
-		serverOpenStatus.textContent = "Paper ran successfully!";
+	    notyf.success("Paper ran successfully!");
 
         serverOpenBtn.disabled = false;
     } catch (error) {
         console.error("Failed to open the Paper server:", error);
-		serverOpenStatus.classList.remove("positive");
-		serverOpenStatus.classList.add("negative");
-		serverOpenStatus.textContent = "Failed to open the Paper server: " + error;
+		notyf.error("Failed to run the Paper server: " + error);
     }
     serverOpenBtn.disabled = false;
 });
@@ -57,7 +49,9 @@ restartServerBtn.addEventListener("click", async () => {
     try {
         await invoke("restart_paper_server");
         console.log("Paper server restarted successfully!");
+        notyf.success("Paper server restarted successfully!");
     } catch (error) {
         console.error("Failed to restart the Paper server:", error);
+        notyf.error("Failed to restart the Paper server: " + error);
     }
 });
